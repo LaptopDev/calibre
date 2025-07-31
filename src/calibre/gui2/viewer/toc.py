@@ -152,7 +152,13 @@ class TOCView(QTreeView):
 
     def copy_to_clipboard(self):
         m = self.model()
-        QApplication.clipboard().setText(getattr(m, 'as_plain_text', ''))
+        md = QApplication.clipboard().mimeData() or QMimeData()
+        text = getattr(m, 'as_plain_text', '')
+        html = getattr(m, 'as_html', '')
+        md.setText(text)
+        if vprefs.get('copy_as_rich_text', False):
+            md.setHtml(html)
+        QApplication.instance().clipboard().setMimeData(md)
 
     def update_current_toc_nodes(self, families):
         self.model().update_current_toc_nodes(families)
@@ -345,3 +351,11 @@ class TOC(QStandardItemModel):
         for item in self.all_items:
             lines.append(' ' * (4 * item.depth) + (item.title or ''))
         return '\n'.join(lines)
+
+    @property
+    def as_html(self):
+        lines = []
+        for item in self.all_items:
+            safe_title = item.title or ''
+            lines.append('&nbsp;' * (4 * item.depth) + safe_title)
+        return '<br>'.join(lines)

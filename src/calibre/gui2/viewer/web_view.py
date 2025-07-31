@@ -376,7 +376,7 @@ class WebPage(QWebEnginePage):
         if text:
             md = QMimeData()
             md.setText(text)
-            if html:
+            if html and vprefs.get('copy_as_rich_text', False):
                 md.setHtml(html)
             QApplication.instance().clipboard().setMimeData(md)
 
